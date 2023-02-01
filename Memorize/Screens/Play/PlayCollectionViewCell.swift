@@ -10,7 +10,7 @@ import UIKit
 class PlayCollectionViewCell: UICollectionViewCell {
     static let reuseIdentifier = "cardCellReuseIdentifier"
     
-    var imageIdentifier: String?
+    var isFlipped: Bool = false
     
     @IBOutlet weak var cardImageView: UIImageView!
 }

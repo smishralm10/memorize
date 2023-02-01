@@ -11,6 +11,7 @@ import UIKit
 
 final class PlayViewModel {
     weak var coordinator: PlayCoordinator?
+    var cards = Card.sampleData()
     
     
 }

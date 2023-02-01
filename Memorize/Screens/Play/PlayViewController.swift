@@ -15,7 +15,12 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     
     var dataSource: DataSource!
     
-    weak var viewModel: PlayViewModel?
+    weak var viewModel: PlayViewModel? {
+        didSet {
+            registerCellWithDataSource()
+            updateSnapshot()
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,8 +29,6 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         
         navigationItem.title = "Play"
         navigationController?.navigationBar.prefersLargeTitles = true
-        registerCellWithDataSource()
-        updateSnapshot()
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -33,14 +36,16 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         let card = dataSource.itemIdentifier(for: indexPath)
         guard let cell = cell, let card  = card else { return }
 
-        if cell.imageIdentifier == nil {
-            UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromRight) {
-                cell.cardImageView.image = card.image.image
-                cell.imageIdentifier = card.image.id
-            }
+        UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromRight) {
+            cell.cardImageView.image = card.image.image
         }
+        cell.isFlipped = true
     }
     
+    override func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? PlayCollectionViewCell else { return false }
+        return !cell.isFlipped
+    }
     
     private func registerCellWithDataSource() {
         dataSource = DataSource(collectionView: collectionView, cellProvider: { collectionView, indexPath, card in
@@ -48,7 +53,6 @@ class PlayViewController: UICollectionViewController, Storyboarded {
             return cell
         })
     }
-    
     
     private func createLayout() -> UICollectionViewLayout {
         let sectionProvider = { (sectionIndex: Int,
@@ -74,10 +78,11 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         return layout
     }
     
-    func updateSnapshot() {
+    private func updateSnapshot() {
+        guard let cards = viewModel?.cards else { return }
         var snapshot = Snapshot()
         snapshot.appendSections([0])
-        snapshot.appendItems(Card.sampleData(), toSection: 0)
+        snapshot.appendItems(cards ,toSection: 0)
         dataSource.apply(snapshot)
     }
 }

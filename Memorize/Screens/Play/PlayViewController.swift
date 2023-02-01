@@ -29,24 +29,23 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let cell = collectionView.cellForItem(at: indexPath)
+        let cell = collectionView.cellForItem(at: indexPath) as? PlayCollectionViewCell
         let card = dataSource.itemIdentifier(for: indexPath)
         guard let cell = cell, let card  = card else { return }
-        
-        UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromRight) {
-            cell.backgroundView = card.backView
-            cell.backgroundView?.layer.cornerRadius = cell.bounds.width * 0.1
+
+        if cell.imageIdentifier == nil {
+            UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromRight) {
+                cell.cardImageView.image = card.image.image
+                cell.imageIdentifier = card.image.id
+            }
         }
     }
     
-//        UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromLeft) {
-//            cell.backgroundView = card.frontView
-//        }
     
     private func registerCellWithDataSource() {
-        let cellRegistration = UICollectionView.CellRegistration(handler: cellRegistrationHandler)
-        dataSource = DataSource(collectionView: collectionView, cellProvider: { collectionView, indexPath, itemIdentifier in
-            return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: itemIdentifier)
+        dataSource = DataSource(collectionView: collectionView, cellProvider: { collectionView, indexPath, card in
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PlayCollectionViewCell.reuseIdentifier, for: indexPath) as? PlayCollectionViewCell else { return UICollectionViewCell() }
+            return cell
         })
     }
     
@@ -73,12 +72,6 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         
         let layout = UICollectionViewCompositionalLayout(sectionProvider: sectionProvider)
         return layout
-    }
-    
-    private func cellRegistrationHandler(cell: UICollectionViewCell, indexPath: IndexPath, card: Card) {
-        cell.backgroundView = card.frontView
-        cell.backgroundView?.layer.cornerRadius = cell.bounds.width * 0.1
-        cell.layer.cornerRadius = cell.bounds.width * 0.1
     }
     
     func updateSnapshot() {

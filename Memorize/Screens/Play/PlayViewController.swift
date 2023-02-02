@@ -15,12 +15,7 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     
     var dataSource: DataSource!
     
-    weak var viewModel: PlayViewModel? {
-        didSet {
-            registerCellWithDataSource()
-            updateSnapshot()
-        }
-    }
+    var viewModel: PlayViewModel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +24,8 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         
         navigationItem.title = "Play"
         navigationController?.navigationBar.prefersLargeTitles = true
+        registerCellWithDataSource()
+        updateSnapshot()
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -79,7 +76,7 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     }
     
     private func updateSnapshot() {
-        guard let cards = viewModel?.cards else { return }
+        let cards = viewModel.cards
         var snapshot = Snapshot()
         snapshot.appendSections([0])
         snapshot.appendItems(cards ,toSection: 0)

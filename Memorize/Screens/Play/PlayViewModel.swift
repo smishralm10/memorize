@@ -12,6 +12,11 @@ import UIKit
 final class PlayViewModel {
     weak var coordinator: PlayCoordinator?
     var cards = Card.sampleData()
+    private var buffer = [Image.ID]()
+    private var matches = [IndexPath]()
     
     
+    private func card(for indexPath: IndexPath) -> Card {
+        return cards[indexPath.row]
+    }
 }

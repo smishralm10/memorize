@@ -15,7 +15,7 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     
     var dataSource: DataSource!
     
-    weak var viewModel: PlayViewModel?
+    var viewModel: PlayViewModel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,27 +29,39 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let cell = collectionView.cellForItem(at: indexPath)
+        let cell = collectionView.cellForItem(at: indexPath) as? PlayCollectionViewCell
         let card = dataSource.itemIdentifier(for: indexPath)
         guard let cell = cell, let card  = card else { return }
-        
-        UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromRight) {
-            cell.backgroundView = card.backView
-            cell.backgroundView?.layer.cornerRadius = cell.bounds.width * 0.1
-        }
+
+        UIView.transition(with: cell, duration: 0.5, options: [.transitionFlipFromRight], animations: {
+            cell.cardImageView.image = card.image.image
+            cell.isFlipped = true
+        }) { _ in
+                let (match, cards) = self.viewModel.shouldMatchCard(with: indexPath)
+                if !match && !cards.isEmpty {
+                    cards.forEach { indexPath in
+                        guard let cell = collectionView.cellForItem(at: indexPath) as? PlayCollectionViewCell else { return }
+                        
+                        UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromLeft) {
+                            cell.cardImageView.image = UIImage(named: "card-background")
+                        }
+                        cell.isFlipped = false
+                    }
+                }
+            }
     }
     
-//        UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromLeft) {
-//            cell.backgroundView = card.frontView
-//        }
+    override func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? PlayCollectionViewCell else { return false }
+        return !cell.isFlipped
+    }
     
     private func registerCellWithDataSource() {
-        let cellRegistration = UICollectionView.CellRegistration(handler: cellRegistrationHandler)
-        dataSource = DataSource(collectionView: collectionView, cellProvider: { collectionView, indexPath, itemIdentifier in
-            return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: itemIdentifier)
+        dataSource = DataSource(collectionView: collectionView, cellProvider: { collectionView, indexPath, card in
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PlayCollectionViewCell.reuseIdentifier, for: indexPath) as? PlayCollectionViewCell else { return UICollectionViewCell() }
+            return cell
         })
     }
-    
     
     private func createLayout() -> UICollectionViewLayout {
         let sectionProvider = { (sectionIndex: Int,
@@ -75,16 +87,11 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         return layout
     }
     
-    private func cellRegistrationHandler(cell: UICollectionViewCell, indexPath: IndexPath, card: Card) {
-        cell.backgroundView = card.frontView
-        cell.backgroundView?.layer.cornerRadius = cell.bounds.width * 0.1
-        cell.layer.cornerRadius = cell.bounds.width * 0.1
-    }
-    
-    func updateSnapshot() {
+    private func updateSnapshot() {
+        let cards = viewModel.cards
         var snapshot = Snapshot()
         snapshot.appendSections([0])
-        snapshot.appendItems(Card.sampleData(), toSection: 0)
+        snapshot.appendItems(cards ,toSection: 0)
         dataSource.apply(snapshot)
     }
 }

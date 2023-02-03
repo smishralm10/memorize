@@ -33,10 +33,22 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         let card = dataSource.itemIdentifier(for: indexPath)
         guard let cell = cell, let card  = card else { return }
 
-        UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromRight) {
+        UIView.transition(with: cell, duration: 0.5, options: [.transitionFlipFromRight], animations: {
             cell.cardImageView.image = card.image.image
-        }
-        cell.isFlipped = true
+            cell.isFlipped = true
+        }) { _ in
+                let (match, cards) = self.viewModel.shouldMatchCard(with: indexPath)
+                if !match && !cards.isEmpty {
+                    cards.forEach { indexPath in
+                        guard let cell = collectionView.cellForItem(at: indexPath) as? PlayCollectionViewCell else { return }
+                        
+                        UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromLeft) {
+                            cell.cardImageView.image = UIImage(named: "card-background")
+                        }
+                        cell.isFlipped = false
+                    }
+                }
+            }
     }
     
     override func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {

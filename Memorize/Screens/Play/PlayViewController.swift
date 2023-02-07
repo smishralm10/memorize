@@ -30,6 +30,7 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         super.viewDidLoad()
         
         collectionView.collectionViewLayout = createLayout()
+        collectionView.bounces = false
         
         registerCellWithDataSource()
         updateSnapshot()

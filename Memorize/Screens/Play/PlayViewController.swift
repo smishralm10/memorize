@@ -17,15 +17,23 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     
     var viewModel: PlayViewModel!
     
+    private let timeLabel: UILabel = {
+        let label = UILabel()
+        label.text = "00:00"
+        label.tintColor = .systemCyan
+        label.font = UIFont.preferredFont(forTextStyle: .title1).withSize(32)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         collectionView.collectionViewLayout = createLayout()
         
-        navigationItem.title = "Play"
-        navigationController?.navigationBar.prefersLargeTitles = true
         registerCellWithDataSource()
         updateSnapshot()
+        setupUI()
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -52,15 +60,49 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     }
     
     override func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
-        guard let cell = collectionView.cellForItem(at: indexPath) as? PlayCollectionViewCell else { return false }
+        guard let cell = collectionView.cellForItem(at: indexPath)
+                as? PlayCollectionViewCell
+        else { return false }
         return !cell.isFlipped
     }
     
+    private func setupUI() {
+        view.addSubview(timeLabel)
+        navigationItem.titleView = timeLabel
+        NSLayoutConstraint.activate([
+            timeLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
+            timeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ])
+    }
+    
     private func registerCellWithDataSource() {
-        dataSource = DataSource(collectionView: collectionView, cellProvider: { collectionView, indexPath, card in
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PlayCollectionViewCell.reuseIdentifier, for: indexPath) as? PlayCollectionViewCell else { return UICollectionViewCell() }
+        dataSource = DataSource(collectionView: collectionView,
+                                cellProvider: { collectionView, indexPath, card in
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: PlayCollectionViewCell.reuseIdentifier,
+                for: indexPath) as? PlayCollectionViewCell else { return UICollectionViewCell() }
             return cell
         })
+        
+        collectionView.register(
+            PlayHeaderReusableView.self,
+            forSupplementaryViewOfKind: PlayHeaderReusableView.elementKind,
+            withReuseIdentifier: PlayHeaderReusableView.reuseIdentifier)
+        
+        dataSource.supplementaryViewProvider = { [unowned self] (collectionView, kind, indexPath)
+            -> UICollectionReusableView? in
+            switch kind {
+            case PlayHeaderReusableView.elementKind:
+                let header = self.collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: PlayHeaderReusableView.reuseIdentifier,
+                    for: indexPath) as? PlayHeaderReusableView
+                header?.frame = CGRect(x: 0, y: 0, width: self.view.bounds.width, height: 100)
+                return header
+            default:
+                fatalError("No element specified with this elementKind")
+            }
+        }
     }
     
     private func createLayout() -> UICollectionViewLayout {
@@ -73,12 +115,21 @@ class PlayViewController: UICollectionViewController, Storyboarded {
             let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                    heightDimension: .estimated(140))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+            
+            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.1), heightDimension: .estimated(100))
                                                 
             group.interItemSpacing = .fixed(20)
             
             let section = NSCollectionLayoutSection(group: group)
             section.interGroupSpacing = 20
             section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 0)
+            
+            let header = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: headerSize,
+                elementKind: PlayHeaderReusableView.elementKind,
+                alignment: .top
+            )
+            section.boundarySupplementaryItems = [header]
             
             return section
         }

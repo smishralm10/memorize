@@ -98,7 +98,7 @@ class PlayViewController: UICollectionViewController, Storyboarded {
                     ofKind: kind,
                     withReuseIdentifier: PlayHeaderReusableView.reuseIdentifier,
                     for: indexPath) as? PlayHeaderReusableView
-                header?.frame = CGRect(x: 0, y: 0, width: self.view.bounds.width, height: 100)
+                header?.frame = CGRect(x: 0, y: 0, width: collectionView.bounds.width, height: 150)
                 return header
             default:
                 fatalError("No element specified with this elementKind")
@@ -117,7 +117,7 @@ class PlayViewController: UICollectionViewController, Storyboarded {
                                                    heightDimension: .estimated(140))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
             
-            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.1), heightDimension: .estimated(100))
+            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.1), heightDimension: .absolute(150))
                                                 
             group.interItemSpacing = .fixed(20)
             

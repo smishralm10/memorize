@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 
 class PlayViewController: UICollectionViewController, Storyboarded {
@@ -17,9 +18,10 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     
     var viewModel: PlayViewModel!
     
+    var cancellables = Set<AnyCancellable>()
+    
     private let timeLabel: UILabel = {
         let label = UILabel()
-        label.text = "00:00"
         label.tintColor = .systemCyan
         label.font = UIFont.preferredFont(forTextStyle: .title1).withSize(32)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -35,6 +37,13 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         registerCellWithDataSource()
         updateSnapshot()
         setupUI()
+        
+        bindTimeLabel()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        viewModel.prepareForGame()
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -74,6 +83,14 @@ class PlayViewController: UICollectionViewController, Storyboarded {
             timeLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
             timeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
+    }
+    
+    private func bindTimeLabel() {
+        viewModel.timeLeftPublisher
+            .sink { [weak self] value in
+                self?.timeLabel.text = "\(value)"
+            }
+            .store(in: &cancellables)
     }
     
     private func registerCellWithDataSource() {

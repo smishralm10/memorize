@@ -137,6 +137,18 @@ class PlayViewController: UICollectionViewController, Storyboarded {
                     withReuseIdentifier: PlayHeaderReusableView.reuseIdentifier,
                     for: indexPath) as? PlayHeaderReusableView
                 header?.frame = CGRect(x: 0, y: 0, width: collectionView.bounds.width, height: 150)
+                viewModel.scorePublisher
+                    .sink { score in
+                        header?.scoreLabel.text = String(score)
+                    }
+                    .store(in: &cancellables)
+                
+                viewModel.levelPublisher
+                    .sink { level in
+                        header?.levelLabel.text = String(level)
+                    }
+                    .store(in: &cancellables)
+                
                 return header
             default:
                 fatalError("No element specified with this elementKind")

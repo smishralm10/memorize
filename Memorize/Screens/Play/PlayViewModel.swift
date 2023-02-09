@@ -17,6 +17,8 @@ final class PlayViewModel {
     var cards = Card.sampleData()
     
     let timeLeftPublisher = PassthroughSubject<Int, Never>()
+    let scorePublisher = PassthroughSubject<Int, Never>()
+    let levelPublisher = PassthroughSubject<Int, Never>()
     
     private var buffer: (Image.ID, IndexPath)? = nil
     
@@ -35,10 +37,12 @@ final class PlayViewModel {
         }
         if buffer.0 == card.image.id {
             score += 20
+            scorePublisher.send(score)
             self.buffer = nil
             return (true, [buffer.1, indexPath])
         } else {
             score -= 10
+            scorePublisher.send(score)
             self.buffer = nil
             return (false, [buffer.1, indexPath])
         }
@@ -54,6 +58,7 @@ final class PlayViewModel {
     
     func prepareForGame() {
         timeLeft = 5
+        levelPublisher.send(1)
         startTimer()
     }
     
@@ -71,6 +76,9 @@ final class PlayViewModel {
         timeLeftPublisher.send(timeLeft)
         if timeLeft > 0 {
             timeLeft -= 1
+        } else if !startGame {
+            timeLeft = 60
+            startGame = true
         } else {
             timer?.invalidate()
         }

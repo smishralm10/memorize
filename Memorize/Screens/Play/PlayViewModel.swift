@@ -25,7 +25,7 @@ final class PlayViewModel {
     var score = 0
     var timeLeft = 0
     
-    var hasGameStarted = false
+    var startGame = false
     
     func shouldMatchCard(with indexPath: IndexPath) -> (Bool, [IndexPath]) {
         let card = card(for: indexPath)
@@ -42,6 +42,14 @@ final class PlayViewModel {
             self.buffer = nil
             return (false, [buffer.1, indexPath])
         }
+    }
+    
+    func getIndexPathForCards() -> [IndexPath] {
+        var indexPaths = [IndexPath]()
+        for row in 0..<cards.count {
+            indexPaths.append(IndexPath(row: row, section: 0))
+        }
+        return indexPaths
     }
     
     func prepareForGame() {

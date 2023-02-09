@@ -43,6 +43,7 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        flipCards(withTransition: .transitionFlipFromRight)
         viewModel.prepareForGame()
     }
     
@@ -89,8 +90,28 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         viewModel.timeLeftPublisher
             .sink { [weak self] value in
                 self?.timeLabel.text = "\(value)"
+                if value == 0 {
+                    self?.flipCards(withTransition: .transitionFlipFromLeft)
+                }
             }
             .store(in: &cancellables)
+    }
+    
+    private func flipCards(withTransition transition: UIView.AnimationOptions) {
+        let indexPaths = viewModel.getIndexPathForCards()
+        indexPaths.forEach { indexPath in
+            let cell = collectionView.cellForItem(at: indexPath) as? PlayCollectionViewCell
+            let card = dataSource.itemIdentifier(for: indexPath)
+            guard let cell = cell,
+                  let card = card else { return }
+            UIView.transition(with: cell, duration: 0.5, options: transition) {
+                if transition == .transitionFlipFromRight {
+                    cell.cardImageView.image = card.image.image
+                } else {
+                    cell.cardImageView.image = UIImage(named: "card-background")
+                }
+            }
+        }
     }
     
     private func registerCellWithDataSource() {

@@ -61,6 +61,8 @@ class PlayHeaderReusableView: UICollectionReusableView {
     lazy var scoreLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = .systemGray3
+        label.font = UIFont.preferredFont(forTextStyle: .body).withSize(24)
+        label.textAlignment = .center
         label.layer.masksToBounds = true
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -69,6 +71,8 @@ class PlayHeaderReusableView: UICollectionReusableView {
     let levelLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = .systemGray3
+        label.font = UIFont.preferredFont(forTextStyle: .body).withSize(24)
+        label.textAlignment = .center
         label.layer.cornerRadius = label.frame.width / 2
         label.layer.masksToBounds = true
         label.translatesAutoresizingMaskIntoConstraints = false

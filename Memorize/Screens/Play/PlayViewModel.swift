@@ -21,27 +21,35 @@ final class PlayViewModel {
     let levelPublisher = PassthroughSubject<Int, Never>()
     
     private var buffer: (Image.ID, IndexPath)? = nil
+    private var matches = 0
     
-    var timer: Timer?
+    private var timer: Timer?
     
-    var score = 0
-    var timeLeft = 0
+    private var score = 0
+    private var timeLeft = 0
     
     var startGame = false
     
     func shouldMatchCard(with indexPath: IndexPath) -> (Bool, [IndexPath]) {
         let card = card(for: indexPath)
+        
         guard let buffer = buffer else {
             buffer = (card.image.id, indexPath)
             return (false, [])
         }
+        
         if buffer.0 == card.image.id {
-            score += 20
+            score += 10
+            matches += 2
+            
             scorePublisher.send(score)
+            
+            if matches == cards.count {
+                timer?.invalidate()
+            }
             self.buffer = nil
             return (true, [buffer.1, indexPath])
         } else {
-            score -= 10
             scorePublisher.send(score)
             self.buffer = nil
             return (false, [buffer.1, indexPath])
@@ -58,6 +66,7 @@ final class PlayViewModel {
     
     func prepareForGame() {
         timeLeft = 5
+        scorePublisher.send(score)
         levelPublisher.send(1)
         startTimer()
     }

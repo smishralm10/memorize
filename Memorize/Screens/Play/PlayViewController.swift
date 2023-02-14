@@ -14,6 +14,8 @@ class PlayViewController: UICollectionViewController, Storyboarded {
     typealias DataSource = UICollectionViewDiffableDataSource<Int, Card>
     typealias Snapshot = NSDiffableDataSourceSnapshot<Int, Card>
     
+    private let CARDTRANSITIONDURATION = 0.3
+    
     var dataSource: DataSource!
     
     var viewModel: PlayViewModel!
@@ -52,7 +54,7 @@ class PlayViewController: UICollectionViewController, Storyboarded {
         let card = dataSource.itemIdentifier(for: indexPath)
         guard let cell = cell, let card  = card else { return }
 
-        UIView.transition(with: cell, duration: 0.5, options: [.transitionFlipFromRight], animations: {
+        UIView.transition(with: cell, duration: CARDTRANSITIONDURATION, options: [.transitionFlipFromRight], animations: {
             cell.cardImageView.image = card.image.image
             cell.isFlipped = true
         }) { _ in
@@ -61,7 +63,7 @@ class PlayViewController: UICollectionViewController, Storyboarded {
                     cards.forEach { indexPath in
                         guard let cell = collectionView.cellForItem(at: indexPath) as? PlayCollectionViewCell else { return }
                         
-                        UIView.transition(with: cell, duration: 0.5, options: .transitionFlipFromLeft) {
+                        UIView.transition(with: cell, duration: self.CARDTRANSITIONDURATION, options: .transitionFlipFromLeft) {
                             cell.cardImageView.image = UIImage(named: "card-background")
                         }
                         cell.isFlipped = false
@@ -104,7 +106,7 @@ class PlayViewController: UICollectionViewController, Storyboarded {
             let card = dataSource.itemIdentifier(for: indexPath)
             guard let cell = cell,
                   let card = card else { return }
-            UIView.transition(with: cell, duration: 0.5, options: transition) {
+            UIView.transition(with: cell, duration: CARDTRANSITIONDURATION, options: transition) {
                 if transition == .transitionFlipFromRight {
                     cell.cardImageView.image = card.image.image
                 } else {
